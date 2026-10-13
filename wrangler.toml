@@ -1,0 +1,26 @@
+# Cloudflare Workers config for this deployment.
+#
+# Unlike upstream's wrangler.example.toml (which targets Cloudflare Pages), this
+# repo runs on Workers with static assets: worker/index.js serves /api/sync and
+# hands everything else to the built app in dist/.
+#
+# Committed on purpose — Cloudflare's Git integration reads it on every build.
+# The KV namespace id is NOT a secret (it is useless without account access).
+
+name = "planly"
+main = "worker/index.js"
+compatibility_date = "2026-01-01"
+
+# The site itself. Populated by `node tools/build.mjs`, which Cloudflare runs as
+# the build command; the committed index.html at the repo root is only a
+# convenience for opening the file locally.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# Sync storage. Uncomment and fill in the id once the namespace exists
+# (Cloudflare dashboard → Storage & databases → KV → Create namespace):
+#
+# [[kv_namespaces]]
+# binding = "PLANLY_SYNC"
+# id = "<your KV namespace id>"

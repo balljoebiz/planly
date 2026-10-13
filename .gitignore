@@ -4,5 +4,7 @@ dist/
 node_modules/
 .wrangler/
 .claude/
-wrangler.toml
+# NB: upstream ignores wrangler.toml (to keep each user's KV id out of git), but this
+# deployment runs on Workers, so the file is committed on purpose — Cloudflare's Git
+# integration reads it on every build. See wrangler.example.toml for the Pages variant.
 tools/shots/raw/
