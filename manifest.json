@@ -1,7 +1,7 @@
 {
   "name": "Planly",
   "short_name": "Planly",
-  "description": "Минималистичный планировщик дня с временной шкалой",
+  "description": "極簡日計畫工具，以時間軸區塊安排一天",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "background_color": "#f2f2f7",
   "theme_color": "#17a05e",
-  "lang": "ru",
+  "lang": "zh-Hant",
   "categories": ["productivity"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },

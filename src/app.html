@@ -366,7 +366,43 @@ textarea.f-note{width:100%;background:var(--field);border:0;border-radius:12px;p
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + var(--sb));z-index:70;background:var(--text);color:var(--bg);
   padding:11px 16px;border-radius:22px;font-size:13.5px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);animation:fade .2s;max-width:90vw}
 .toast button{color:var(--accent);font-weight:600;font-size:13.5px}
+/* ---------- экран блокировки кодом ---------- */
+.lock{position:fixed;inset:0;z-index:200;background:var(--bg);color:var(--text);
+  display:flex;align-items:center;justify-content:center;padding:24px 24px calc(24px + var(--sb))}
+.lock-in{width:100%;max-width:290px;text-align:center}
+.lock-ic{width:58px;height:58px;margin:0 auto 14px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center}
+.lock-ic svg{width:26px;height:26px;fill:none;stroke:var(--text-2);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.lock-t{font-size:16px;font-weight:600;margin-bottom:18px}
+.lock-d{display:flex;gap:15px;justify-content:center;margin-bottom:12px}
+.lock-d i{width:13px;height:13px;border-radius:50%;border:1.6px solid var(--text-3);transition:background .12s,border-color .12s}
+.lock-d i.on{background:var(--accent);border-color:var(--accent)}
+.lock-m{height:17px;font-size:13px;color:var(--red);margin-bottom:12px}
+.lock-p{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.lock-p button{height:56px;border:0;border-radius:14px;background:var(--field);color:var(--text);font-size:23px;font-weight:400}
+.lock-p button:active{background:var(--chip-2)}
+.lock-p button.b{background:none;pointer-events:none}
+.lock-p button svg{width:24px;height:24px;fill:none;stroke:var(--text);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+@keyframes lshake{10%,90%{transform:translateX(-2px)}30%,70%{transform:translateX(4px)}50%{transform:translateX(-4px)}}
+.lock-in.sh{animation:lshake .4s}
+.pin{flex:1;min-width:0;background:var(--chip);border:0;border-radius:8px;padding:7px 9px;font-size:16px;outline:none;
+  letter-spacing:6px;text-align:center;font-variant-numeric:tabular-nums}
 </style>
+
+<div class="lock" id="lock">
+  <div class="lock-in" id="lockIn">
+    <div class="lock-ic"><svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="3"/><path d="M8 10.5V7a4 4 0 018 0v3.5"/></svg></div>
+    <div class="lock-t" id="lockT" data-i18n="Введите код">Введите код</div>
+    <div class="lock-d" id="lockD"><i></i><i></i><i></i><i></i></div>
+    <div class="lock-m" id="lockM"></div>
+    <div class="lock-p" id="lockP">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button class="b"></button><button data-k="0">0</button>
+      <button data-k="del" aria-label="Удалить" data-i18n-aria="Удалить"><svg viewBox="0 0 24 24"><path d="M9 5h10a2 2 0 012 2v10a2 2 0 01-2 2H9L3 12z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/></svg></button>
+    </div>
+  </div>
+</div>
 
 <div class="app">
   <section class="view on" id="v-day">
@@ -477,14 +513,20 @@ textarea.f-note{width:100%;background:var(--field);border:0;border-radius:12px;p
 var $=function(s,r){return (r||document).querySelector(s);},
     $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
 /* ---------- язык ---------- */
-var LANGS=[['ru','Русский','ru-RU'],['en','English','en-US'],['es','Español','es-ES'],['de','Deutsch','de-DE'],['zh','中文','zh-CN'],['hi','हिन्दी','hi-IN']];
+var LANGS=[['zh-TW','繁體中文','zh-TW'],['zh','简体中文','zh-CN'],['en','English','en-US']];
 var L=(typeof PLANLY_I18N!=='undefined')?PLANLY_I18N:{};
 function detectLang(){
   var saved=null;
   try{ var r=JSON.parse(localStorage.getItem('planly.v1')||'null'); saved=r&&r.settings&&r.settings.lang; }catch(e){}
-  if(saved&&saved!=='auto') return saved;
-  var nav=((navigator.languages&&navigator.languages[0])||navigator.language||'en').slice(0,2).toLowerCase();
-  for(var i=0;i<LANGS.length;i++) if(LANGS[i][0]===nav) return nav;
+  if(saved&&saved!=='auto'){ for(var s=0;s<LANGS.length;s++) if(LANGS[s][0]===saved) return saved; }
+  var raw=String((navigator.languages&&navigator.languages[0])||navigator.language||'en').toLowerCase();
+  // китайский: сначала отличить традиционный (zh-TW/HK/MO/Hant) от упрощённого
+  if(raw.indexOf('zh')===0){
+    if(raw.indexOf('hant')>=0||/^zh-(tw|hk|mo)/.test(raw)) return 'zh-TW';
+    return 'zh';
+  }
+  var nav=raw.slice(0,2);
+  for(var i=0;i<LANGS.length;i++) if(LANGS[i][0].toLowerCase()===nav) return LANGS[i][0];
   return 'en';
 }
 var LANG=detectLang(), LOCALE='en-US';
@@ -506,7 +548,7 @@ function translateStatic(){
 }
 
 var KEY='planly.v1';
-var DEF={theme:'auto',dayStart:7,dayEnd:23,hour:64,snap:5,dur:60,mode:'scale',accent:'green',lang:'auto'};
+var DEF={theme:'auto',dayStart:7,dayEnd:23,hour:64,snap:5,dur:60,mode:'scale',accent:'green',lang:'auto',pin:''};
 var ACCENTS=[['green',tr('Зелёный'),'23,160,94'],['blue',tr('Синий'),'10,124,255'],['indigo',tr('Индиго'),'88,86,214'],
   ['purple',tr('Фиолетовый'),'175,82,222'],['pink',tr('Розовый'),'224,64,124'],['teal',tr('Бирюзовый'),'18,165,178'],['graphite',tr('Графит'),'72,72,74']];
 var WD=(function(){
@@ -2147,6 +2189,12 @@ function openSettings(){
       '<div class="hint">'+tr('Синхронизация между устройствами')+'</div>'+
       '<div class="card" id="syncBox"></div>'+
       '<div class="hint">'+tr('Один код — один общий список. Введите его на втором устройстве, и дела будут догонять друг друга.')+'</div>'+
+      '<div class="hint">'+tr('Код доступа')+'</div>'+
+      '<div class="card">'+
+        '<div class="row"><span class="lbl">'+tr('Изменить код')+'</span><button class="tb r" id="sPin">'+tr('Открыть')+'</button></div>'+
+        '<div class="row"><span class="lbl">'+tr('Заблокировать')+'</span><button class="tb r" id="sLock">'+tr('Заблокировать')+'</button></div>'+
+      '</div>'+
+      '<div class="hint">'+tr('Код — 4 цифры')+'</div>'+
       '<div class="hint">'+tr('Инструменты')+'</div>'+
       '<div class="card"><div class="row"><span class="lbl">'+tr('Разгрузить дела за период')+'</span>'+
         '<button class="tb r" id="sUnload">'+tr('Открыть')+'</button></div></div>'+
@@ -2215,9 +2263,38 @@ function openSettings(){
     snapshot(); S.tasks=[]; S.settings=Object.assign({},DEF);
     save();applyTheme();render();closeSheet();toast(tr('Всё очищено'),true);
   });
+  $('#sPin',sh).addEventListener('click',function(){ closeSheet(); openPinChange(); });
+  $('#sLock',sh).addEventListener('click',function(){ lockNow(); });
   $('#sClose',sh).addEventListener('click',closeSheet);
   renderSyncBox($('#syncBox',sh));
   syncVals();
+}
+
+/* ---------- смена кода доступа ---------- */
+function openPinChange(){
+  var sh=openSheet(
+    '<div class="sh-h"><button class="tb" id="pCancel">'+tr('Отмена')+'</button><div class="t">'+tr('Изменить код')+'</div><span class="tb r"></span></div>'+
+    '<div class="sh-b">'+
+      '<div class="hint">'+tr('Код — 4 цифры')+'</div>'+
+      '<div class="card">'+
+        '<div class="row"><span class="lbl">'+tr('Текущий код')+'</span><input class="pin" id="pOld" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>'+
+        '<div class="row"><span class="lbl">'+tr('Новый код')+'</span><input class="pin" id="pNew" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>'+
+        '<div class="row"><span class="lbl">'+tr('Повторите код')+'</span><input class="pin" id="pRep" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></div>'+
+      '</div>'+
+      '<button class="prim" id="pSave">'+tr('Готово')+'</button>'+
+    '</div>');
+  $('#pCancel',sh).addEventListener('click',closeSheet);
+  $('#pSave',sh).addEventListener('click',function(){
+    var o=$('#pOld',sh).value, n=$('#pNew',sh).value, r=$('#pRep',sh).value;
+    if(!/^[0-9]{4}$/.test(n)){ toast(tr('Код — 4 цифры')); return; }
+    if(n!==r){ toast(tr('Коды не совпадают')); return; }
+    checkPin(o).then(function(ok){
+      if(!ok){ toast(tr('Неверный текущий код')); return; }
+      pinHash(n).then(function(h){
+        S.settings.pin=h; save(); closeSheet(); toast(tr('Код изменён'));
+      });
+    });
+  });
 }
 
 /* ---------- синхронизация ---------- */
@@ -2594,33 +2671,98 @@ function seed(){
 if(window.navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))
   document.documentElement.classList.add('standalone');
 
+/* ---------- код доступа (замок) ---------- */
+var UNLOCK_KEY='planly.unlocked';
+function pinHash(s){
+  if(window.crypto&&crypto.subtle&&crypto.subtle.digest&&window.TextEncoder)
+    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(buf){
+      var b=new Uint8Array(buf),o='',i;
+      for(i=0;i<b.length;i++) o+=('0'+b[i].toString(16)).slice(-2);
+      return o;
+    });
+  // небезопасный контекст (file://): простая свёртка — код хотя бы не хранится открытым текстом
+  var h=5381,i2; for(i2=0;i2<s.length;i2++){ h=((h<<5)+h+s.charCodeAt(i2))>>>0; }
+  return Promise.resolve('w'+h.toString(16));
+}
+function checkPin(pin){
+  var stored=S.settings&&S.settings.pin;
+  if(!stored) return Promise.resolve(pin==='0000');   // код по умолчанию — 0000
+  return pinHash(pin).then(function(h){ return h===stored; });
+}
+function lockNow(reload){
+  try{ sessionStorage.removeItem(UNLOCK_KEY); }catch(e){}
+  if(reload!==false) location.reload();
+}
+
 /* ---------- init ---------- */
 if(!localStorage.getItem(KEY)) seed();
+load();                    // нужен до замка: код доступа лежит в настройках
 translateStatic();
-load();
-buildShadow();
-loadSync();
-purgeArchive();
-ensureOccurrences();
-S.date=todayISO();
 applyTheme();
-(function(){
-  var q=new URLSearchParams(location.search), v=q.get('view'), d=q.get('date');
-  if(d&&/^\d{4}-\d{2}-\d{2}$/.test(d)) S.date=d;
-  setView(({day:1,list:1,notes:1,arch:1})[v]?v:'day');
-})();
-render();
-setMode(S.settings.mode);
-if(sync.code) syncNow(false);
-setInterval(function(){ if(sync.code&&!document.hidden) syncNow(false); },120000);
-document.addEventListener('visibilitychange',function(){
-  if(document.hidden) return;
+
+function boot(){
+  buildShadow();
+  loadSync();
+  purgeArchive();
+  ensureOccurrences();
+  S.date=todayISO();
+  (function(){
+    var q=new URLSearchParams(location.search), v=q.get('view'), d=q.get('date');
+    if(d&&/^\d{4}-\d{2}-\d{2}$/.test(d)) S.date=d;
+    setView(({day:1,list:1,notes:1,arch:1})[v]?v:'day');
+  })();
+  render();
+  setMode(S.settings.mode);
   if(sync.code) syncNow(false);
-  checkUpdate();
-});
-setTimeout(checkUpdate,3000);
-setInterval(checkUpdate,1800000);
-window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').addEventListener&&
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+  setInterval(function(){ if(sync.code&&!document.hidden) syncNow(false); },120000);
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden) return;
+    if(sync.code) syncNow(false);
+    checkUpdate();
+  });
+  setTimeout(checkUpdate,3000);
+  setInterval(checkUpdate,1800000);
+  window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').addEventListener&&
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);
+}
+
+/* замок: пока код не введён, приложение не отрисовывается вообще */
+(function(){
+  var lock=$('#lock');
+  if(!lock){ boot(); return; }
+  var unlocked=false;
+  try{ unlocked=(sessionStorage.getItem(UNLOCK_KEY)==='1'); }catch(e){}
+  if(unlocked){ lock.hidden=true; boot(); return; }
+  var buf='', box=$('#lockIn'), msg=$('#lockM'), dots=$$('#lockD i');
+  function paint(){ for(var i=0;i<dots.length;i++) dots[i].classList.toggle('on', i<buf.length); }
+  function fail(){
+    msg.textContent=tr('Неверный код'); buf=''; paint();
+    box.classList.add('sh'); setTimeout(function(){ box.classList.remove('sh'); },430);
+  }
+  function submit(){
+    checkPin(buf).then(function(ok){
+      if(!ok){ fail(); return; }
+      try{ sessionStorage.setItem(UNLOCK_KEY,'1'); }catch(e){}
+      msg.textContent=''; lock.hidden=true; boot();
+    });
+  }
+  function push(d){
+    if(buf.length>=4) return;
+    buf+=d; paint();
+    if(buf.length===4) setTimeout(submit,130);
+  }
+  $('#lockP',lock).addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b||!b.dataset.k) return;
+    var k=b.dataset.k;
+    if(k==='del'){ buf=buf.slice(0,-1); paint(); }
+    else if(/^[0-9]$/.test(k)) push(k);
+  });
+  document.addEventListener('keydown',function(e){
+    if(lock.hidden) return;
+    if(/^[0-9]$/.test(e.key)) push(e.key);
+    else if(e.key==='Backspace'){ e.preventDefault(); buf=buf.slice(0,-1); paint(); }
+  });
+  paint();
+})();
 })();
 </script>

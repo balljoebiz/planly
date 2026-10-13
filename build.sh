@@ -6,11 +6,11 @@ cd "$(dirname "$0")"
 {
 cat <<'HEAD'
 <!doctype html>
-<html lang="ru">
+<html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<meta name="description" content="Planly — минималистичный планировщик дня с временной шкалой.">
+<meta name="description" content="Planly — 極簡日計畫工具，以時間軸區塊安排一天。">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#f2f2f7">
 <meta name="format-detection" content="telephone=no">
