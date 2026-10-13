@@ -1888,15 +1888,15 @@ var DEF={theme:'auto',dayStart:7,dayEnd:23,hour:64,snap:5,dur:60,mode:'scale',ac
 var ACCENTS=[['green',tr('Зелёный'),'23,160,94'],['blue',tr('Синий'),'10,124,255'],['indigo',tr('Индиго'),'88,86,214'],
   ['purple',tr('Фиолетовый'),'175,82,222'],['pink',tr('Розовый'),'224,64,124'],['teal',tr('Бирюзовый'),'18,165,178'],['graphite',tr('Графит'),'72,72,74']];
 var WD=(function(){
-  var out=[], base=new Date(2024,0,1); // понедельник
+  var out=[], base=new Date(2024,0,7); // воскресенье
   for(var i=0;i<7;i++){
-    var d=new Date(2024,0,1+i), w=d.toLocaleDateString(LOCALE,{weekday:'short'}).replace(/\.$/,'');
+    var d=new Date(2024,0,7+i), w=d.toLocaleDateString(LOCALE,{weekday:'short'}).replace(/\.$/,'');
     out.push(w.charAt(0).toUpperCase()+w.slice(1));
   }
   return out;
 })();
 var KEEP_DAYS=14;
-var BUILD='04.10 23:23'; if(BUILD.charAt(0)==='_') BUILD='dev';
+var BUILD='13.10 16:49'; if(BUILD.charAt(0)==='_') BUILD='dev';
 function isApp(){return !!(window.navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));}
 var PRI=[{n:tr('Низкий'),c:'var(--gray)'},{n:tr('Средний'),c:'var(--accent)'},
          {n:tr('Высокий'),c:'var(--orange)'},{n:tr('Срочно'),c:'var(--red)'}];
@@ -1987,7 +1987,7 @@ function isoOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'
 function fromISO(s){var p=String(s).split('-').map(Number);return new Date(p[0],p[1]-1,p[2]);}
 function addDays(s,n){var d=fromISO(s);d.setDate(d.getDate()+n);return isoOf(d);}
 function todayISO(){return isoOf(new Date());}
-function mondayOf(s){var d=fromISO(s),wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return isoOf(d);}
+function weekStartOf(s){var d=fromISO(s),wd=d.getDay();d.setDate(d.getDate()-wd);return isoOf(d);}
 function hhmm(m){m=Math.max(0,Math.round(m));return String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m)%60).padStart(2,'0');}
 function durStr(m){var h=Math.floor(m/60),mm=Math.round(m%60);
   if(h&&mm)return h+' '+tr('ч')+' '+mm+' '+tr('м'); if(h)return h+' '+tr('ч'); return mm+' '+tr('мин');}
@@ -2101,7 +2101,7 @@ var WINDOW_AHEAD=35;
 function seriesMatches(sr,iso){
   if(iso<sr.from) return false;
   if(sr.kind==='daily') return true;
-  var wd=(fromISO(iso).getDay()+6)%7;
+  var wd=fromISO(iso).getDay();
   return (sr.days||[]).indexOf(wd)>=0;
 }
 function repLabel(sr){
@@ -2109,8 +2109,8 @@ function repLabel(sr){
   if(sr.kind==='daily') return tr('каждый день');
   var d=(sr.days||[]).slice().sort(function(a,b){return a-b;});
   if(d.length===7) return tr('каждый день');
-  if(d.join()==='0,1,2,3,4') return tr('по будням');
-  if(d.join()==='5,6') return tr('по выходным');
+  if(d.join()==='1,2,3,4,5') return tr('по будням');
+  if(d.join()==='0,6') return tr('по выходным');
   return d.map(function(i){return WD[i];}).join(', ');
 }
 function instanceFor(sr,iso){
@@ -2201,7 +2201,7 @@ function renderHead(){
 }
 
 function renderStrip(){
-  var wk=mondayOf(S.date), t=todayISO(), html='';
+  var wk=weekStartOf(S.date), t=todayISO(), html='';
   for(var i=0;i<7;i++){
     var d=addDays(wk,i), n=onDay(d).length, cls='dcell'+(d===S.date?' sel':'')+(d===t?' today':'');
     html+='<button class="'+cls+'" data-d="'+d+'"><span class="wd">'+WD[i]+'</span>'+
@@ -2933,7 +2933,7 @@ function rangeTasks(from,to){
   }).sort(function(a,b){ return a.date<b.date?-1:(a.date>b.date?1:a.start-b.start); });
 }
 function openUnload(){
-  var U={from:mondayOf(S.date), to:addDays(mondayOf(S.date),6), dest:'list', clear:false};
+  var U={from:weekStartOf(S.date), to:addDays(weekStartOf(S.date),6), dest:'list', clear:false};
   var sh=openSheet(
     '<div class="sh-h"><button class="tb" id="uCancel">'+tr('Отмена')+'</button>'+
     '<div class="t">'+tr('Разгрузить дела')+'</div><span class="tb r"></span></div>'+
@@ -3028,7 +3028,7 @@ function openCalendar(){
       '<button class="subtle" id="cUnload">'+tr('Разгрузить дела')+'…</button>'+
     '</div>');
   function draw(){
-    var first=new Date(y,m,1), wd=(first.getDay()+6)%7, dim=new Date(y,m+1,0).getDate();
+    var first=new Date(y,m,1), wd=first.getDay(), dim=new Date(y,m+1,0).getDate();
     var rows=Math.ceil((wd+dim)/7), start=new Date(y,m,1-wd), html='', i, t=todayISO();
     for(i=0;i<rows*7;i++){
       var d=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), iso=isoOf(d);
@@ -3434,7 +3434,7 @@ function openEditor(task,pre){
     var r=b.dataset.r;
     if(r==='none') E.rep=null;
     else if(r==='daily') E.rep={kind:'daily',days:[]};
-    else { var wd=(fromISO(E.date||S.date).getDay()+6)%7; E.rep={kind:'week',days:(E.rep&&E.rep.days.length)?E.rep.days:[wd]}; }
+    else { var wd=fromISO(E.date||S.date).getDay(); E.rep={kind:'week',days:(E.rep&&E.rep.days.length)?E.rep.days:[wd]}; }
     syncRep();
   });});
   $$('#eDays button',sh).forEach(function(b){b.addEventListener('click',function(){
