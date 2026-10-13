@@ -18,9 +18,8 @@ compatibility_date = "2026-01-01"
 directory = "./dist"
 binding = "ASSETS"
 
-# Sync storage. Uncomment and fill in the id once the namespace exists
-# (Cloudflare dashboard → Storage & databases → KV → Create namespace):
-#
-# [[kv_namespaces]]
-# binding = "PLANLY_SYNC"
-# id = "<your KV namespace id>"
+# Sync storage — one KV key per access code. The id is not a secret: it is useless
+# without access to this Cloudflare account.
+[[kv_namespaces]]
+binding = "PLANLY_SYNC"
+id = "e2f8b5aebc334e41afb91c3adc32a497"
