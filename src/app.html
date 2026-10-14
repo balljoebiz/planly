@@ -94,6 +94,26 @@ button{background:none;border:0;padding:0;cursor:pointer}
 .cd.has.sel .u{background:var(--accent)}
 .cd.out.has .u{background:var(--text-3)}
 
+/* ---- месячный обзор ---- */
+#v-month .cal-wd{padding:0 10px 6px}
+#v-month .cal-h{padding:2px 10px 4px}
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:2px 10px 16px}
+.mcell{display:flex;flex-direction:column;gap:2px;min-height:56px;padding:5px 4px 4px;border-radius:10px;
+  background:var(--field);text-align:left;color:var(--text);overflow:hidden;transition:transform .12s}
+.mcell:active{transform:scale(.97)}
+.mcell.out{opacity:.32}
+.mcell.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.mcell.sel{background:var(--accent-soft)}
+.mcell .dnum{font-size:12.5px;font-weight:600;line-height:1.15}
+.mcell.today .dnum{color:var(--accent);font-weight:700}
+.mcell .dots{display:flex;flex-wrap:wrap;gap:3px;padding-top:3px}
+.mcell .dots i{width:5px;height:5px;border-radius:50%}
+.mcal.wide .mcell{min-height:74px}
+.mcell .ev{font-size:10px;line-height:1.3;color:var(--text-2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:100%;text-align:left}
+.mcell .ev.done{text-decoration:line-through;color:var(--text-3)}
+.mcell .ev.more{color:var(--text-3)}
+
 /* ---- заметки ---- */
 .ncard{display:block;width:100%;text-align:left;background:var(--surface);border-radius:14px;padding:12px 14px;transition:transform .12s}
 .ncard:active{transform:scale(.988)}
@@ -489,11 +509,37 @@ textarea.f-note{width:100%;background:var(--field);border:0;border-radius:12px;p
     <div class="scroll" id="archive"></div>
   </section>
 
+  <section class="view" id="v-month">
+    <div class="hd">
+      <div>
+        <h1 data-i18n="Месяц">Месяц</h1>
+        <p class="sub" id="mSub">Пусто</p>
+      </div>
+      <div class="grow"></div>
+      <button class="today-pill" id="mToday" hidden data-i18n="Сегодня">Сегодня</button>
+      <div class="viewseg" id="mDensity">
+        <button data-d="dots" aria-label="Точки" data-i18n-aria="Точки"><svg viewBox="0 0 24 24"><circle cx="7" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="17" cy="12" r="1.7"/></svg></button>
+        <button data-d="text" aria-label="Кратко" data-i18n-aria="Кратко"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h9"/></svg></button>
+      </div>
+      <button class="ib" id="bSet5" aria-label="Настройки" data-i18n-aria="Настройки"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 004.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg></button>
+    </div>
+    <div class="cal-h">
+      <button class="ib" id="mPrev" aria-label="Предыдущий месяц"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="m" id="mLabel"></div>
+      <button class="ib" id="mNext" aria-label="Следующий месяц"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="cal-wd" id="mWd"></div>
+    <div class="scroll" id="mWrap"><div class="mcal" id="mGrid"></div></div>
+  </section>
+
   <button class="fab" id="fab" aria-label="Новое дело" data-i18n-aria="Новое дело"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 
   <nav class="tabbar">
     <button class="tab on" data-view="day">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15h5"/></svg><span data-i18n="День">День</span>
+    </button>
+    <button class="tab" data-view="month">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M7 14h2M11 14h2M15 14h2M7 18h2M11 18h2"/></svg><span data-i18n="Месяц">Месяц</span>
     </button>
     <button class="tab" data-view="list">
       <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg><span data-i18n="Задачи">Задачи</span>
@@ -548,7 +594,7 @@ function translateStatic(){
 }
 
 var KEY='planly.v1';
-var DEF={theme:'auto',dayStart:7,dayEnd:23,hour:64,snap:5,dur:60,mode:'scale',accent:'green',lang:'auto',pin:''};
+var DEF={theme:'auto',dayStart:7,dayEnd:23,hour:64,snap:5,dur:60,mode:'scale',accent:'green',lang:'auto',pin:'',monthDensity:'dots'};
 var ACCENTS=[['green',tr('Зелёный'),'23,160,94'],['blue',tr('Синий'),'10,124,255'],['indigo',tr('Индиго'),'88,86,214'],
   ['purple',tr('Фиолетовый'),'175,82,222'],['pink',tr('Розовый'),'224,64,124'],['teal',tr('Бирюзовый'),'18,165,178'],['graphite',tr('Графит'),'72,72,74']];
 var WD=(function(){
@@ -632,7 +678,7 @@ function normalizeSeries(x){
   return {id:x.id||uid(),title:x.title||'',note:x.note||'',start:(typeof x.start==='number')?x.start:9*60,
     dur:x.dur||60,pri:(typeof x.pri==='number')?x.pri:1,folder:x.folder||null,
     kind:x.kind==='week'?'week':'daily',days:Array.isArray(x.days)?x.days.slice():[],
-    from:x.from||todayISO(),skip:x.skip||{},ruleUpd:x.ruleUpd||0,upd:x.upd||0};
+    from:x.from||todayISO(),to:x.to||'',skip:x.skip||{},ruleUpd:x.ruleUpd||0,upd:x.upd||0};
 }
 function seriesById(id){for(var i=0;i<S.series.length;i++)if(S.series[i].id===id)return S.series[i];return null;}
 function normalizeNote(x){return {id:x.id||uid(),title:x.title||'',body:x.body||'',upd:x.upd||0};}
@@ -764,18 +810,24 @@ function slotStarts(date,dur,skip,limit){
 var WINDOW_AHEAD=35;
 function seriesMatches(sr,iso){
   if(iso<sr.from) return false;
+  if(sr.to&&iso>sr.to) return false;
   if(sr.kind==='daily') return true;
   var wd=fromISO(iso).getDay();
   return (sr.days||[]).indexOf(wd)>=0;
 }
 function repLabel(sr){
   if(!sr) return '';
-  if(sr.kind==='daily') return tr('каждый день');
-  var d=(sr.days||[]).slice().sort(function(a,b){return a-b;});
-  if(d.length===7) return tr('каждый день');
-  if(d.join()==='1,2,3,4,5') return tr('по будням');
-  if(d.join()==='0,6') return tr('по выходным');
-  return d.map(function(i){return WD[i];}).join(', ');
+  var base;
+  if(sr.kind==='daily') base=tr('каждый день');
+  else{
+    var d=(sr.days||[]).slice().sort(function(a,b){return a-b;});
+    if(d.length===7) base=tr('каждый день');
+    else if(d.join()==='1,2,3,4,5') base=tr('по будням');
+    else if(d.join()==='0,6') base=tr('по выходным');
+    else base=d.map(function(i){return WD[i];}).join(', ');
+  }
+  if(sr.to) base+=' → '+fmtShort(sr.to);
+  return base;
 }
 function instanceFor(sr,iso){
   return normalize({id:sr.id+'@'+iso,title:sr.title,note:sr.note,date:iso,start:sr.start,dur:sr.dur,
@@ -823,6 +875,18 @@ function removeSeries(sr,keepId){
     return false;
   });
 }
+/* обрезать серию: убрать экземпляры с указанной даты и закончить серию вчера */
+function truncateSeries(sr,fromIso){
+  var last=addDays(fromIso,-1);
+  S.tasks=S.tasks.filter(function(t){
+    if(t.seriesId!==sr.id) return true;
+    if(t.date<fromIso) return true;               // прошлое не трогаем
+    if(t.done){ t.seriesId=null; return true; }   // выполненное отвязываем, но сохраняем
+    return false;                                 // будущие невыполненные убираем
+  });
+  if(sr.from>last){ removeSeries(sr,null); return; }   // вся серия была позже этой даты
+  sr.to=last; sr.ruleUpd=Date.now();
+}
 function detachInstance(t){
   var sr=t.seriesId&&seriesById(t.seriesId);
   if(sr){ sr.skip=sr.skip||{}; sr.skip[t.date]=true; }
@@ -832,6 +896,92 @@ function detachInstance(t){
 /* ---------- undo / toast ---------- */
 var undoSnap=null, toastT=0;
 function snapshot(){undoSnap=JSON.stringify({tasks:S.tasks,folders:S.folders,notes:S.notes,series:S.series});}
+
+/* ---------- точки восстановления ----------
+   Снимок всего документа перед рискованными операциями. Синхронизация — главный
+   источник беды: устройство с устаревшими или пустыми данными присылает надгробия,
+   и они удаляют записи на всех остальных. Поэтому перед применением чужого
+   документа считаем, сколько наших записей он собирается удалить, и если порог
+   превышен — принудительно сохраняем точку, которую потом можно вернуть. */
+var HIST_KEY='planly.hist', HIST_MAX=10, HIST_MIN_GAP=120000, HIST_DANGER=4;
+function histLoad(){
+  try{ var a=JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); return (a&&a.length)?a:[]; }catch(e){ return []; }
+}
+function histWrite(list){ try{ localStorage.setItem(HIST_KEY,JSON.stringify(list)); }catch(e){} }
+function histCounts(){ return {t:S.tasks.length,f:S.folders.length,n:S.notes.length,r:S.series.length}; }
+function histTotal(c){ return c.t+c.f+c.n+c.r; }
+/* force — для действий пользователя; иначе не чаще раза в HIST_MIN_GAP */
+function histPush(label,force){
+  try{
+    var doc={tasks:S.tasks,folders:S.folders,notes:S.notes,series:S.series,settings:S.settings,del:S.del,settingsUpd:S.settingsUpd};
+    var sig=JSON.stringify(doc);
+    var list=histLoad();
+    if(list.length&&list[0].sig===sig) return false;
+    if(!force&&list.length&&(Date.now()-(list[0].at||0))<HIST_MIN_GAP) return false;
+    list.unshift({at:Date.now(),label:label||'',sig:sig,counts:histCounts(),doc:doc});
+    if(list.length>HIST_MAX) list.length=HIST_MAX;
+    histWrite(list);
+    return true;
+  }catch(e){ return false; }
+}
+/* сколько наших записей этот документ собирается удалить */
+function wouldDelete(remote){
+  if(!remote||!remote.del) return 0;
+  var n=0, del=remote.del;
+  [S.tasks,S.folders,S.notes,S.series].forEach(function(arr){
+    (arr||[]).forEach(function(x){ if(x&&x.id&&(del[x.id]||0)>(x.upd||0)) n++; });
+  });
+  return n;
+}
+/* восстановление поднимает upd всем записям — иначе серверные надгробия их переживут */
+function histRestore(i){
+  var list=histLoad(), it=list[i];
+  if(!it||!it.doc) return false;
+  histPush(tr('Восстановить'),true);
+  var d=it.doc, now=Date.now();
+  applyingRemote=true;
+  S.tasks=(d.tasks||[]).map(normalize); S.tasks.forEach(function(x){x.upd=now;});
+  S.folders=(d.folders||[]).slice(); normFolders(); S.folders.forEach(function(x){x.upd=now;});
+  S.notes=(d.notes||[]).map(normalizeNote); S.notes.forEach(function(x){x.upd=now;});
+  S.series=(d.series||[]).map(normalizeSeries); S.series.forEach(function(x){x.upd=now;});
+  S.settings=Object.assign({},DEF,d.settings||{});
+  S.del=Object.assign({},d.del||{});
+  S.settingsUpd=now;
+  applyingRemote=false;
+  save(); buildShadow(); applyTheme(); render();
+  return true;
+}
+function histWhen(at){
+  var d=new Date(at||0), t=new Date(), p=function(n){return String(n).padStart(2,'0');};
+  var hm=p(d.getHours())+':'+p(d.getMinutes());
+  if(d.toDateString()===t.toDateString()) return hm;
+  return (d.getMonth()+1)+'/'+d.getDate()+' '+hm;
+}
+function histSummary(c){
+  c=c||{t:0,f:0,n:0,r:0};
+  var out=[c.t+' '+plur(c.t,'дело','задача','запись')];
+  if(c.f) out.push(tr('Папки')+' '+c.f);
+  if(c.n) out.push(c.n+' '+plur(c.n,'заметка','заметка','заметка'));
+  return out.join(' · ');
+}
+function openRestore(){
+  var list=histLoad();
+  var rows=list.length?list.map(function(h,i){
+    return '<div class="row"><span class="lbl">'+esc(histWhen(h.at))+
+      '<br><span style="color:var(--text-3);font-size:12px">'+esc(histSummary(h.counts))+
+      (h.label?' · '+esc(h.label):'')+'</span></span>'+
+      '<button class="tb r" data-h="'+i+'">'+tr('Восстановить')+'</button></div>';
+  }).join(''):'<div class="hint">'+tr('Пусто')+'</div>';
+  var sh=openSheet(
+    '<div class="sh-h"><button class="tb" id="hClose">'+tr('Закрыть')+'</button><div class="t">'+tr('Точки восстановления')+'</div><span class="tb r"></span></div>'+
+    '<div class="sh-b"><div class="card" id="hList">'+rows+'</div></div>');
+  $('#hClose',sh).addEventListener('click',closeSheet);
+  $('#hList',sh).addEventListener('click',function(e){
+    var b=e.target.closest('button[data-h]'); if(!b) return;
+    if(!confirm(tr('Восстановить это состояние?'))) return;
+    if(histRestore(+b.dataset.h)){ closeSheet(); toast(tr('Восстановлено'),true); }
+  });
+}
 function toast(msg,withUndo){
   var old=$('#toast'); if(old) old.remove();
   clearTimeout(toastT);
@@ -846,7 +996,7 @@ function toast(msg,withUndo){
 }
 
 /* ---------- render ---------- */
-function render(){renderHead();renderStrip();renderTimeline();renderDayList();renderBacklog();renderArchive();renderNotes();}
+function render(){renderHead();renderStrip();renderTimeline();renderDayList();renderBacklog();renderArchive();renderNotes();if($('#v-month').classList.contains('on'))renderMonth();}
 
 function renderHead(){
   var list=onDay(S.date), total=list.reduce(function(a,t){return a+t.dur;},0);
@@ -1717,6 +1867,59 @@ function openCalendar(){
 }
 $('#dTitle').addEventListener('click',openCalendar);
 
+/* ---------- месячный обзор ---------- */
+var mY=null, mM=null;
+function hmShort(m){ if(m==null) return ''; var h=Math.floor(m/60), mm=Math.round(m%60); return mm?(h+':'+String(mm).padStart(2,'0')):String(h); }
+function priColor(p){ return PRI[(typeof p==='number'&&p>=0&&p<PRI.length)?p:1].c; }
+function renderMonth(){
+  var host=$('#v-month'); if(!host) return;
+  var d0=fromISO(S.date);
+  if(mY===null||mM===null){ mY=d0.getFullYear(); mM=d0.getMonth(); }
+  var y=mY, m=mM;
+  var first=new Date(y,m,1), wd=first.getDay(), dim=new Date(y,m+1,0).getDate();
+  var rows=Math.ceil((wd+dim)/7), start=new Date(y,m,1-wd), t=todayISO();
+  var text=(S.settings.monthDensity==='text'), html='', i, total=0;
+  for(i=0;i<rows*7;i++){
+    var dd=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), iso=isoOf(dd);
+    var list=onDay(iso).slice().sort(function(a,b){ return (a.start==null?9999:a.start)-(b.start==null?9999:b.start); });
+    if(dd.getMonth()===m) total+=list.length;
+    var inner='<span class="dnum">'+dd.getDate()+'</span>';
+    if(list.length){
+      if(text){
+        inner+=list.slice(0,2).map(function(x){
+          return '<span class="ev'+(x.done?' done':'')+'">'+esc(hmShort(x.start)+' '+x.title)+'</span>';
+        }).join('');
+        if(list.length>2) inner+='<span class="ev more">+'+(list.length-2)+'</span>';
+      }else{
+        inner+='<span class="dots">'+list.slice(0,7).map(function(x){
+          return '<i style="background:'+priColor(x.pri)+'"></i>';
+        }).join('')+'</span>';
+      }
+    }
+    html+='<button class="mcell'+(dd.getMonth()!==m?' out':'')+(iso===t?' today':'')+(iso===S.date?' sel':'')+'" data-d="'+iso+'">'+inner+'</button>';
+  }
+  $('#mGrid').innerHTML=html;
+  $('#mGrid').className='mcal'+(text?' wide':'');
+  $('#mWd').innerHTML=WD.map(function(w){return '<span>'+w+'</span>';}).join('');
+  var lbl=first.toLocaleDateString(LOCALE,{month:'long',year:'numeric'}).replace(/\s*г\.$/,'');
+  $('#mLabel').textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+  $('#mSub').textContent=total+' '+plur(total,'дело','задача','запись');
+  $('#mToday').hidden=!(y!==d0.getFullYear()||m!==d0.getMonth()||S.date!==t);
+  $$('#mDensity button').forEach(function(b){ b.classList.toggle('on',b.dataset.d===(text?'text':'dots')); });
+}
+$('#mPrev').addEventListener('click',function(){ mM--; if(mM<0){mM=11;mY--;} renderMonth(); });
+$('#mNext').addEventListener('click',function(){ mM++; if(mM>11){mM=0;mY++;} renderMonth(); });
+$('#mToday').addEventListener('click',function(){ mY=null; mM=null; goDay(todayISO()); renderMonth(); });
+$('#mGrid').addEventListener('click',function(e){
+  var c=e.target.closest('.mcell'); if(!c) return;
+  goDay(c.dataset.d); setView('day');
+  if(S.settings.mode==='scale') focusDay();
+});
+$$('#mDensity button').forEach(function(b){b.addEventListener('click',function(){
+  S.settings.monthDensity=b.dataset.d; save(); renderMonth();
+});});
+$('#bSet5').addEventListener('click',openSettings);
+
 /* ---------- generic press-drag ---------- */
 function noScroll(e){e.preventDefault();}
 function lockScroll(on){
@@ -1958,7 +2161,7 @@ function openEditor(task,pre){
               dur:pre.dur||S.settings.dur,pri:1,done:false,folder:pre.folder||null};
   var unsched=!(E.date&&E.start!=null);
   var srOld=(task&&task.seriesId)?seriesById(task.seriesId):null;
-  E.rep=srOld?{kind:srOld.kind,days:(srOld.days||[]).slice()}:null;
+  E.rep=srOld?{kind:srOld.kind,days:(srOld.days||[]).slice(),to:srOld.to||''}:null;
   var oldDate=task?task.date:null;
 
   var sh=openSheet(
@@ -1985,6 +2188,8 @@ function openEditor(task,pre){
         '<div class="hint">'+tr('Повтор')+'</div>'+
         '<div class="seg" id="eRep"><button data-r="none">'+tr('Нет')+'</button><button data-r="daily">'+tr('Каждый день')+'</button><button data-r="week">'+tr('По дням')+'</button></div>'+
         '<div class="chips" id="eDays" hidden>'+WD.map(function(w,i){return '<button data-d="'+i+'">'+w+'</button>';}).join('')+'</div>'+
+        '<div class="card" id="eUntilBox" hidden><div class="row"><span class="lbl">'+tr('Дата окончания')+'</span>'+
+          '<input type="date" id="eUntil"><button class="tb r" id="eUntilClr" style="min-width:0">'+tr('Бессрочно')+'</button></div></div>'+
         '<div id="eSeries"></div>'+
       '</div>'+
       '<div id="eWarn"></div>'+
@@ -2016,14 +2221,24 @@ function openEditor(task,pre){
     $$('#eRep button',sh).forEach(function(b){b.classList.toggle('on',b.dataset.r===kind);});
     $('#eDays',sh).hidden=(kind!=='week');
     $$('#eDays button',sh).forEach(function(b){b.classList.toggle('on',!!E.rep&&E.rep.kind==='week'&&E.rep.days.indexOf(+b.dataset.d)>=0);});
+    $('#eUntilBox',sh).hidden=(kind==='none');
+    if(kind!=='none') $('#eUntil',sh).value=(E.rep&&E.rep.to)||'';
     var box=$('#eSeries',sh);
     if(srOld){
       box.innerHTML='<div class="hint">'+tr('Дело из серии «{r}».',{r:esc(repLabel(srOld))})+' '+tr('Правки в этой карточке — только для этого дня.')+'</div>'+
-        '<button class="subtle" id="eAll">'+tr('Применить ко всем будущим')+'</button>'+
+        '<button class="subtle" id="eAll">'+tr('Изменить это и будущие')+'</button>'+
+        '<button class="subtle" id="eDelFrom" style="color:var(--red)">'+tr('Удалить это и будущие')+'</button>'+
         '<button class="subtle" id="eDelAll" style="color:var(--red)">'+tr('Удалить все повторы')+'</button>';
       $('#eAll',sh).addEventListener('click',applyToAll);
+      $('#eDelFrom',sh).addEventListener('click',function(){
+        var d=E.date||S.date;
+        snapshot(); histPush(tr('Удалить это и будущие'));
+        truncateSeries(srOld,d); save(); closeSheet(); render();
+        toast(tr('Удалено это и будущие'),true);
+      });
       $('#eDelAll',sh).addEventListener('click',function(){
-        snapshot(); removeSeries(srOld,null); save(); closeSheet(); render(); toast(tr('Серия удалена'),true);
+        snapshot(); histPush(tr('Удалить все повторы'));
+        removeSeries(srOld,null); save(); closeSheet(); render(); toast(tr('Серия удалена'),true);
       });
     } else box.innerHTML='';
   }
@@ -2034,11 +2249,16 @@ function openEditor(task,pre){
     readFields();
     if(!srOld) return;
     if(E.rep&&E.rep.kind==='week'&&!E.rep.days.length){ toast(tr('Выберите дни недели')); return; }
-    snapshot();
+    var from=E.date||S.date;
+    snapshot(); histPush(tr('Изменить это и будущие'));
+    if(!E.rep){   // повтор снят → серия заканчивается этим днём, прошлое остаётся
+      truncateSeries(srOld,from); save(); closeSheet(); render(); toast(tr('Удалено это и будущие'),true); return;
+    }
     srOld.title=E.title; srOld.note=E.note; srOld.dur=E.dur; srOld.pri=E.pri; srOld.folder=E.folder||null;
     srOld.start=Math.max(dayMin(),Math.min(dayMax()-E.dur,E.start==null?dayMin():E.start));
-    if(E.rep){ srOld.kind=E.rep.kind; srOld.days=E.rep.days.slice(); }
-    regenSeries(srOld,E.date||S.date);
+    srOld.kind=E.rep.kind; srOld.days=E.rep.days.slice();
+    srOld.to=(E.rep.to&&E.rep.to>=srOld.from)?E.rep.to:'';
+    regenSeries(srOld,from);
     closeSheet(); render(); toast(tr('Применено ко всем будущим'),true);
   }
   function syncSched(){
@@ -2107,6 +2327,14 @@ function openEditor(task,pre){
     if(i>=0) E.rep.days.splice(i,1); else E.rep.days.push(d);
     syncRep();
   });});
+  $('#eUntil',sh).addEventListener('change',function(){
+    if(!E.rep) return;
+    E.rep.to=this.value||'';
+  });
+  $('#eUntilClr',sh).addEventListener('click',function(){
+    if(!E.rep) return;
+    E.rep.to=''; $('#eUntil',sh).value='';
+  });
   $('#eMinus',sh).addEventListener('click',function(){E.dur=Math.max(5,E.dur-15);syncSched();});
   $('#ePlus',sh).addEventListener('click',function(){E.dur=Math.min(12*60,E.dur+15);syncSched();});
   $('#eCancel',sh).addEventListener('click',closeSheet);
@@ -2140,13 +2368,15 @@ function openEditor(task,pre){
       /* --- повторы --- */
       if(srOld){
         if(t.date!==oldDate){ detachInstance({seriesId:srOld.id,date:oldDate}); t.seriesId=null; }
-        else if(!E.rep){ removeSeries(srOld,t.id); t.seriesId=null; }
-        else if(E.rep.kind!==srOld.kind||E.rep.days.slice().sort().join()!==(srOld.days||[]).slice().sort().join()){
-          srOld.kind=E.rep.kind; srOld.days=E.rep.days.slice(); regenSeries(srOld,t.date);
+        else if(!E.rep){ t.seriesId=null; truncateSeries(srOld,t.date); }   // повтор снят: прошлое остаётся, будущее убираем
+        else if(E.rep.kind!==srOld.kind||E.rep.days.slice().sort().join()!==(srOld.days||[]).slice().sort().join()||(E.rep.to||'')!==(srOld.to||'')){
+          srOld.kind=E.rep.kind; srOld.days=E.rep.days.slice();
+          srOld.to=(E.rep.to&&E.rep.to>=srOld.from)?E.rep.to:'';
+          regenSeries(srOld,t.date);
         }
       }else if(E.rep){
         var sr=normalizeSeries({id:uid(),title:t.title,note:t.note,start:t.start,dur:t.dur,pri:t.pri,folder:t.folder,
-          kind:E.rep.kind,days:E.rep.days,from:t.date});
+          kind:E.rep.kind,days:E.rep.days,from:t.date,to:(E.rep.to&&E.rep.to>=t.date)?E.rep.to:''});
         S.series.push(sr);
         S.tasks=S.tasks.filter(function(x){return x.id!==t.id;});
         var inst=instanceFor(sr,t.date); inst.done=t.done; inst.doneAt=t.doneAt;
@@ -2195,6 +2425,8 @@ function openSettings(){
         '<div class="row"><span class="lbl">'+tr('Заблокировать')+'</span><button class="tb r" id="sLock">'+tr('Заблокировать')+'</button></div>'+
       '</div>'+
       '<div class="hint">'+tr('Код — 4 цифры')+'</div>'+
+      '<div class="hint">'+tr('Точки восстановления')+'</div>'+
+      '<div class="card"><div class="row"><span class="lbl">'+tr('Восстановить')+'</span><button class="tb r" id="sRestore">'+tr('Открыть')+'</button></div></div>'+
       '<div class="hint">'+tr('Инструменты')+'</div>'+
       '<div class="card"><div class="row"><span class="lbl">'+tr('Разгрузить дела за период')+'</span>'+
         '<button class="tb r" id="sUnload">'+tr('Открыть')+'</button></div></div>'+
@@ -2252,7 +2484,7 @@ function openSettings(){
       try{
         var d=JSON.parse(txt);
         if(!d||!Array.isArray(d.tasks))throw 0;
-        snapshot(); S.tasks=d.tasks.map(normalize);
+        snapshot(); histPush(tr('Вставить из буфера'),true); S.tasks=d.tasks.map(normalize);
         if(d.settings)S.settings=Object.assign({},DEF,d.settings);
         save();applyTheme();render();closeSheet();toast(tr('Данные восстановлены'),true);
       }catch(e){toast(tr('В буфере не копия Planly'));}
@@ -2260,10 +2492,11 @@ function openSettings(){
   });
   $('#sWipe',sh).addEventListener('click',function(){
     if(!confirm(tr('Удалить все дела и настройки?')))return;
-    snapshot(); S.tasks=[]; S.settings=Object.assign({},DEF);
+    snapshot(); histPush(tr('Удалить все данные'),true); S.tasks=[]; S.settings=Object.assign({},DEF);
     save();applyTheme();render();closeSheet();toast(tr('Всё очищено'),true);
   });
   $('#sPin',sh).addEventListener('click',function(){ closeSheet(); openPinChange(); });
+  $('#sRestore',sh).addEventListener('click',function(){ closeSheet(); openRestore(); });
   $('#sLock',sh).addEventListener('click',function(){ lockNow(); });
   $('#sClose',sh).addEventListener('click',closeSheet);
   renderSyncBox($('#syncBox',sh));
@@ -2344,6 +2577,10 @@ function mergeArr(local,remote,del){
 }
 function applyRemote(remote){
   if(!remote) return false;
+  var doomed=wouldDelete(remote);
+  // чужой документ собирается снести наши записи — точку сохраняем ДО слияния
+  histPush(tr('Синхронизация между устройствами'), doomed>=HIST_DANGER);
+  if(doomed>=HIST_DANGER) toast(tr('Сохранена точка восстановления'));
   var beforeT=JSON.stringify(S.tasks), beforeF=JSON.stringify(S.folders), themed=false;
   applyingRemote=true;
   S.del=mergeDel(S.del,remote.del);
@@ -2540,13 +2777,14 @@ function applyTheme(){
 function setView(v){
   if(S.view==='note'&&v!=='note'&&noteId){ flushNote(); }
   S.view=v;
-  ['day','list','notes','note','arch'].forEach(function(k){ $('#v-'+k).classList.toggle('on',v===k); });
+  ['day','list','notes','note','arch','month'].forEach(function(k){ $('#v-'+k).classList.toggle('on',v===k); });
   $('#fab').hidden=(v==='arch'||v==='note');
   $('#nToolbar').hidden=(v!=='note');
   document.body.classList.toggle('note-open', v==='note');
   if(v!=='note'){ closeFmt(); }
   var tabOf=(v==='note')?'notes':v;
   $$('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.view===tabOf);});
+  if(v==='month'){ mY=null; mM=null; renderMonth(); }   // месяц всегда открывается на текущем
 }
 function setMode(m){
   S.settings.mode=m; save();

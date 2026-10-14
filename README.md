@@ -25,6 +25,9 @@ do not remove it.
 | 2 | Languages reduced to **English / 繁體中文 / 简体中文** | `src/i18n.js`, `src/app.html` |
 | 3 | A **4-digit code lock** in front of the app (default `0000`) | `src/app.html` |
 | 4 | **Cross-device sync** on Cloudflare Workers + KV | `worker/`, `wrangler.toml`, `tools/build.mjs` |
+| 5 | Repeats get an **end date**, and edits/deletes can apply **from a chosen day onward** | `src/app.html` |
+| 6 | **Restore points**, plus a guard against a bad device wiping your data | `src/app.html` |
+| 7 | A **month view** with dot / summary density | `src/app.html` |
 
 Everything below is written so you can port the same changes onto your own copy.
 
@@ -175,6 +178,47 @@ out of `build.sh` so the two cannot drift, then writes `index.html` and `dist/`
 (versioned `sw.js`, `version.txt`, `icons/`). Verified byte-identical to `build.sh`
 output apart from the build stamp.
 
+### 5. Repeat rules: an end date, and "from this day onward"
+
+Upstream repeats run forever, can only be edited "for this one day" or "for all future
+days", and stopping a repeat deletes the whole series including its past.
+
+- `normalizeSeries()` gains `to` (empty string = forever) and `seriesMatches()` returns
+  false past it — so `ensureOccurrences()` stops generating, and shortening an end date
+  makes `regenSeries()` drop the instances that fall outside.
+- The editor shows an end-date field (with a *no end date* button) whenever a repeat is on.
+- `truncateSeries(sr, fromIso)` cuts a series from a date: non-completed instances from
+  that day on are removed, completed ones are detached rather than deleted, and `sr.to`
+  moves to the day before. The usual `save()` path then writes the tombstones, so the cut
+  syncs to other devices.
+- Setting a repeat back to *none* and saving now **truncates** from that day instead of
+  deleting the series — the past is kept. Use the explicit buttons for the other outcomes.
+
+### 6. Restore points — surviving a bad sync
+
+The failure this guards against: one device (reinstalled, cleared, stale) pushes its
+state, its tombstones win the merge, and every other device loses data with it.
+
+- `histPush()` keeps the last **10 full-document snapshots** in `localStorage` under
+  `planly.hist`, deduplicated by a content signature and throttled to one automatic
+  snapshot per 2 minutes.
+- Before applying a remote document, `wouldDelete()` counts how many of your items that
+  document's tombstones would remove. At **4 or more** a snapshot is forced *before* the
+  merge, and a toast tells you a restore point was saved.
+- **Settings → Restore points** lists them (time, counts, and what caused it). Restoring
+  bumps `upd` on every record — otherwise the server's tombstones would simply delete
+  them again — and restores `del` from the snapshot. It also snapshots the current state
+  first, so a restore is itself undoable.
+- Clipboard import and *Wipe all data* take a snapshot first too.
+
+### 7. Month view
+
+A fifth tab, taking its cues from a separate month-grid notes app: one cell per day, a dot
+per task coloured by priority, or — in summary density — the first two titles plus a `+n`
+badge. Today is outlined, the selected day is tinted, days outside the month are dimmed,
+and tapping a day jumps to the day view. The weekday header follows the Sunday-first
+change from §1. Density is stored in `settings.monthDensity` (`dots` / `text`).
+
 ---
 
 ## Deploying your own copy
@@ -245,7 +289,7 @@ upstream files, so it should merge cleanly.
 應用程式的所有功勞歸原作者。MIT 授權允許複製、修改與再散布，條件是保留著作權聲明與
 授權條款本身 —— 也就是這個 repo 裡的 `LICENSE`。
 
-### 四項改動
+### 七項改動
 
 | | 改動 | 檔案 |
 |---|---|---|
@@ -253,6 +297,9 @@ upstream files, so it should merge cleanly.
 | 2 | 語言只留**英文／繁體中文／簡體中文** | `src/i18n.js`、`src/app.html` |
 | 3 | 開站需輸入**4 位數密碼**（預設 `0000`） | `src/app.html` |
 | 4 | 用 Cloudflare Workers + KV 做**跨裝置同步** | `worker/`、`wrangler.toml`、`tools/build.mjs` |
+| 5 | 重複任務可設**結束日期**，修改／刪除可只套用**這天以後** | `src/app.html` |
+| 6 | **還原點**，以及防止壞裝置把資料一拼移除的防護 | `src/app.html` |
+| 7 | **月檢視**（圓點／摘要兩種密度） | `src/app.html` |
 
 **1. 週日起算**：`src/app.html` 有 8 處以週一為基準，全部改成 `getDay()`（原本是
 `(getDay()+6)%7`），`mondayOf()` 更名為 `weekStartOf()`。**注意**：重複任務存在
@@ -276,6 +323,25 @@ origin。上游為 Cloudflare **Pages** 準備了 `functions/api/sync.js`，但�
 改用 `worker/index.js` 實作**完全相同**的協定，其餘交給靜態資產。`wrangler.toml` 指
 `assets` 到 `dist/` 並綁定 KV。衝突處理仍由客戶端負責：收到 409 就先逐項合併（比
 `upd` 時間戳、用 `del` 墓碑）再重試，伺服器端永不覆蓋較新的資料。
+
+**5. 重複任務的結束日期與「這天以後」**：`normalizeSeries()` 新增 `to`（空＝永久），
+`seriesMatches()` 超過就不再符合，所以 `ensureOccurrences()` 不再產生、`regenSeries()`
+也會把超出新結束日的實例收掉。編輯器在開啟重複時顯示結束日期欄位（附「無結束日期」按鈕）。
+`truncateSeries(sr, fromIso)` 從某天截斷：之後未完成的實例移除、已完成的只脫離系列不刪除，
+並把 `to` 移到前一天；刪除由一般的 `save()` 產生墓碑，所以會同步到其他裝置。
+把重複改成「無」再儲存，現在是**截斷**而不是刪掉整個系列，過去會保留。
+
+**6. 還原點（防止壞同步）**：要防的是「一台裝置狀態錯誤 → 它的墓碑在合併中勝出 →
+其他裝置一起掉資料」。`histPush()` 在 `localStorage`（`planly.hist`）保留最近 **10 份**
+完整快照，以內容簽章去重，自動快照每 2 分鐘最多一次。套用遠端文件前，`wouldDelete()`
+會先算「這份文件的墓碑會刪掉我幾筆」，達到 **4 筆**就在**合併前強制存快照**並提示。
+設定裡的**還原點**會列出時間、筆數與成因；還原時會把所有項目的 `upd` 提高
+（否則伺服器的墓碑會再把它們刪一次）並還原 `del`，而且**還原本身也會先存一份**，
+所以可以再還原回去。匯入與「清除所有資料」也一樣會先存。
+
+**7. 月檢視**：第五個分頁。每天一格；圓點密度時每筆任務一個點（依優先級上色），
+摘要密度時顯示前兩筆標題與 `+n` 標記。今天加框、選取日加底色、非本月淡化，
+點日期跳到日檢視。星期列沿用第 1 項的週日起算。密度記在 `settings.monthDensity`。
 
 ### 自己部署一份
 
