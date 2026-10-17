@@ -2848,8 +2848,11 @@ $('#fab').addEventListener('click',function(){
 /* ---------- keyboard (desktop) ---------- */
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){closeSheet();return;}
+  if(!$('#lock').hidden) return;
   var tag=(e.target.tagName||'').toLowerCase();
-  if(tag==='input'||tag==='textarea'||sheetEl)return;
+  // contenteditable (the note body) is neither input nor textarea; without this the
+  // digits 1-4 switched views while typing a note instead of being entered.
+  if(tag==='input'||tag==='textarea'||tag==='select'||e.target.isContentEditable||sheetEl)return;
   if(e.key==='ArrowLeft'){goDay(addDays(S.date,-1));}
   else if(e.key==='ArrowRight'){goDay(addDays(S.date,1));}
   else if(e.key==='t'||e.key=="е"){goDay(todayISO());focusDay();}
@@ -2859,6 +2862,7 @@ document.addEventListener('keydown',function(e){
   else if(e.key==='2'){setView('list');}
   else if(e.key==='3'){setView('notes');}
   else if(e.key==='4'){setView('arch');}
+  else if(e.key==='5'){setView('month');}
 });
 
 /* ---------- clock ---------- */
